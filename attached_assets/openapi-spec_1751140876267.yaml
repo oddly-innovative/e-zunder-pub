@@ -1,0 +1,928 @@
+# OpenAPI 3.0 Specification for eZunder API - docs/openapi.yaml
+
+```yaml
+openapi: 3.0.3
+info:
+  title: eZunder API
+  description: |
+    eZunder is a revolutionary ePublishing client that integrates advanced AI capabilities
+    powered by Google Vertex AI Gemini for content generation, editing, and management.
+    
+    ## Features
+    - AI-powered content generation and improvement
+    - User authentication with JWT tokens
+    - Project and document management
+    - Real-time collaboration
+    - Advanced security with rate limiting
+    
+    ## Authentication
+    This API uses JWT tokens for authentication. Include the token in the Authorization header:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+    
+  version: 1.0.0
+  contact:
+    name: eZunder Development Team
+    email: dev@ezunder.com
+    url: https://github.com/ezunder/ezunder-app
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.ezunder.com
+    description: Production server
+  - url: https://staging-api.ezunder.com
+    description: Staging server
+  - url: http://localhost:8080
+    description: Development server
+
+paths:
+  # Health and Status
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns the health status of the API server
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+                  environment:
+                    type: string
+                  version:
+                    type: string
+
+  # Authentication Endpoints
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - firstName
+                - lastName
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john.doe@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: SecurePassword123!
+                firstName:
+                  type: string
+                  example: John
+                lastName:
+                  type: string
+                  example: Doe
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return JWT tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john.doe@example.com
+                password:
+                  type: string
+                  example: SecurePassword123!
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Get a new access token using refresh token
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  accessToken:
+                    type: string
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Clear refresh token and logout user
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout successful
+
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Get current authenticated user information
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # User Management
+  /api/users/me:
+    get:
+      tags:
+        - Users
+      summary: Get user profile
+      description: Get the current user's profile information
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+    put:
+      tags:
+        - Users
+      summary: Update user profile
+      description: Update the current user's profile information
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  # Project Management
+  /api/projects:
+    get:
+      tags:
+        - Projects
+      summary: Get user projects
+      description: Retrieve all projects for the authenticated user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, active, completed, archived]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      tags:
+        - Projects
+      summary: Create new project
+      description: Create a new project
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: My New Book
+                description:
+                  type: string
+                  example: A comprehensive guide to modern web development
+                settings:
+                  type: object
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+  /api/projects/{id}:
+    get:
+      tags:
+        - Projects
+      summary: Get project by ID
+      description: Retrieve a specific project by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Project retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: Project not found
+
+    put:
+      tags:
+        - Projects
+      summary: Update project
+      description: Update an existing project
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                  enum: [draft, active, completed, archived]
+                settings:
+                  type: object
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+    delete:
+      tags:
+        - Projects
+      summary: Delete project
+      description: Delete a project and all its documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Project deleted successfully
+
+  # Document Management
+  /api/documents:
+    get:
+      tags:
+        - Documents
+      summary: Get user documents
+      description: Retrieve all documents for the authenticated user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: projectId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [article, book, report, summary, email, blog_post, social_post]
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, review, published, archived]
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+                  total:
+                    type: integer
+
+    post:
+      tags:
+        - Documents
+      summary: Create new document
+      description: Create a new document
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - type
+              properties:
+                title:
+                  type: string
+                  example: Introduction to AI
+                content:
+                  type: string
+                type:
+                  type: string
+                  enum: [article, book, report, summary, email, blog_post, social_post]
+                projectId:
+                  type: string
+                  format: uuid
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Document created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+
+  # AI Endpoints
+  /api/ai/generate:
+    post:
+      tags:
+        - AI
+      summary: Generate content with AI
+      description: Generate new content using Google Vertex AI Gemini
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+                - contentType
+              properties:
+                prompt:
+                  type: string
+                  example: Write an article about the benefits of renewable energy
+                contentType:
+                  type: string
+                  enum: [article, book, report, summary, email]
+                tone:
+                  type: string
+                  enum: [professional, casual, academic, creative]
+                length:
+                  type: string
+                  enum: [short, medium, long]
+                projectId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Content generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  content:
+                    type: string
+                  metadata:
+                    type: object
+                    properties:
+                      contentType:
+                        type: string
+                      tone:
+                        type: string
+                      length:
+                        type: string
+                      tokensUsed:
+                        type: integer
+                      projectId:
+                        type: string
+        '500':
+          description: AI generation failed
+
+  /api/ai/improve:
+    post:
+      tags:
+        - AI
+      summary: Improve existing content
+      description: Improve existing content using AI
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+                - improvementType
+              properties:
+                content:
+                  type: string
+                improvementType:
+                  type: string
+                  enum: [grammar, style, clarity, engagement, seo]
+                tone:
+                  type: string
+                  enum: [professional, casual, academic, creative]
+                projectId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Content improved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  originalContent:
+                    type: string
+                  improvedContent:
+                    type: string
+                  metadata:
+                    type: object
+
+  /api/ai/summarize:
+    post:
+      tags:
+        - AI
+      summary: Summarize content
+      description: Generate a summary of the provided content
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                summaryLength:
+                  type: string
+                  enum: [brief, detailed]
+                  default: brief
+                projectId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Content summarized successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  originalContent:
+                    type: string
+                  summary:
+                    type: string
+                  metadata:
+                    type: object
+
+  /api/ai/translate:
+    post:
+      tags:
+        - AI
+      summary: Translate content
+      description: Translate content to a different language
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+                - targetLanguage
+              properties:
+                content:
+                  type: string
+                targetLanguage:
+                  type: string
+                  example: Spanish
+                preserveFormatting:
+                  type: boolean
+                  default: true
+                projectId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Content translated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  originalContent:
+                    type: string
+                  translatedContent:
+                    type: string
+                  metadata:
+                    type: object
+
+  /api/ai/usage:
+    get:
+      tags:
+        - AI
+      summary: Get AI usage statistics
+      description: Get AI usage statistics for the current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Usage statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usage:
+                    type: object
+                    properties:
+                      totalRequests:
+                        type: integer
+                      totalTokens:
+                        type: integer
+                      requestsByType:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              type: string
+                            count:
+                              type: integer
+                            tokens:
+                              type: integer
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+        lastName:
+          type: string
+        role:
+          type: string
+          enum: [user, admin, super_admin]
+        isActive:
+          type: boolean
+        emailVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, completed, archived]
+        userId:
+          type: string
+          format: uuid
+        isArchived:
+          type: boolean
+        settings:
+          type: object
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        content:
+          type: string
+        summary:
+          type: string
+        type:
+          type: string
+          enum: [article, book, report, summary, email, blog_post, social_post]
+        status:
+          type: string
+          enum: [draft, review, published, archived]
+        projectId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        tags:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+        version:
+          type: integer
+        isArchived:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        statusCode:
+          type: integer
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        statusCode:
+          type: integer
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Users
+    description: User management
+  - name: Projects
+    description: Project management
+  - name: Documents
+    description: Document management
+  - name: AI
+    description: AI-powered content generation and editing
+```

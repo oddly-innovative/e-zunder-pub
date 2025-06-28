@@ -1,0 +1,291 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(20, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+
+  /* Custom eZunder colors matching design reference */
+  --ezunder-primary-50: hsl(207, 89%, 95%);
+  --ezunder-primary-100: hsl(207, 78%, 87%);
+  --ezunder-primary-200: hsl(207, 81%, 79%);
+  --ezunder-primary-300: hsl(207, 82%, 69%);
+  --ezunder-primary-400: hsl(207, 83%, 61%);
+  --ezunder-primary-500: hsl(207, 90%, 54%);
+  --ezunder-primary-600: hsl(207, 85%, 49%);
+  --ezunder-primary-700: hsl(207, 82%, 43%);
+  --ezunder-primary-800: hsl(207, 85%, 35%);
+  --ezunder-primary-900: hsl(207, 87%, 21%);
+
+  --ezunder-secondary-50: hsl(291, 64%, 97%);
+  --ezunder-secondary-100: hsl(291, 64%, 93%);
+  --ezunder-secondary-200: hsl(291, 64%, 85%);
+  --ezunder-secondary-300: hsl(291, 64%, 75%);
+  --ezunder-secondary-400: hsl(291, 64%, 65%);
+  --ezunder-secondary-500: hsl(291, 64%, 54%);
+  --ezunder-secondary-600: hsl(291, 64%, 47%);
+  --ezunder-secondary-700: hsl(291, 64%, 40%);
+  --ezunder-secondary-800: hsl(291, 64%, 34%);
+  --ezunder-secondary-900: hsl(291, 64%, 20%);
+
+  --ezunder-accent-50: hsl(36, 100%, 94%);
+  --ezunder-accent-100: hsl(36, 100%, 88%);
+  --ezunder-accent-200: hsl(36, 100%, 80%);
+  --ezunder-accent-300: hsl(36, 100%, 70%);
+  --ezunder-accent-400: hsl(36, 100%, 63%);
+  --ezunder-accent-500: hsl(36, 100%, 50%);
+  --ezunder-accent-600: hsl(36, 92%, 47%);
+  --ezunder-accent-700: hsl(36, 100%, 39%);
+  --ezunder-accent-800: hsl(36, 100%, 31%);
+  --ezunder-accent-900: hsl(36, 100%, 20%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 3.9%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 3.7%, 15.9%);
+  --muted-foreground: hsl(240, 5%, 64.9%);
+  --popover: hsl(240, 10%, 3.9%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 3.9%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 3.7%, 15.9%);
+  --input: hsl(240, 3.7%, 15.9%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 3.7%, 15.9%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 3.7%, 15.9%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 4.9%, 83.9%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+@layer components {
+  .ezunder-gradient-primary {
+    background: linear-gradient(135deg, var(--ezunder-primary-500), var(--ezunder-secondary-500));
+  }
+
+  .ezunder-gradient-secondary {
+    background: linear-gradient(135deg, var(--ezunder-secondary-50), var(--ezunder-primary-50));
+  }
+
+  .ezunder-gradient-accent {
+    background: linear-gradient(135deg, var(--ezunder-accent-400), #ef4444);
+  }
+
+  .ezunder-card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .ezunder-button-primary {
+    @apply bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transform hover:-translate-y-0.5 transition-all shadow-lg hover:shadow-xl;
+  }
+
+  .ezunder-button-secondary {
+    @apply border-2 border-blue-600 text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-blue-50 transition-all;
+  }
+
+  .ezunder-text-primary {
+    color: var(--ezunder-primary-600);
+  }
+
+  .ezunder-text-secondary {
+    color: var(--ezunder-secondary-600);
+  }
+
+  .ezunder-text-accent {
+    color: var(--ezunder-accent-600);
+  }
+
+  .ezunder-bg-primary {
+    background-color: var(--ezunder-primary-500);
+  }
+
+  .ezunder-bg-secondary {
+    background-color: var(--ezunder-secondary-500);
+  }
+
+  .ezunder-bg-accent {
+    background-color: var(--ezunder-accent-500);
+  }
+}
+
+@layer utilities {
+  .font-inter {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(20, 5.9%, 90%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(25, 5.3%, 44.7%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(20, 14.3%, 4.1%);
+}
+
+/* Smooth animations */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Rich text editor styles */
+.prose-editor {
+  @apply max-w-none prose prose-lg;
+}
+
+.prose-editor h1 {
+  @apply text-3xl font-bold text-gray-900 mb-6;
+}
+
+.prose-editor h2 {
+  @apply text-2xl font-semibold text-gray-900 mt-8 mb-4;
+}
+
+.prose-editor h3 {
+  @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.prose-editor p {
+  @apply text-gray-700 leading-relaxed mb-4;
+}
+
+.prose-editor ul, .prose-editor ol {
+  @apply mb-4 pl-6;
+}
+
+.prose-editor li {
+  @apply mb-2;
+}
+
+.prose-editor blockquote {
+  @apply border-l-4 border-blue-500 pl-4 italic text-gray-600 my-6;
+}
+
+.prose-editor code {
+  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono;
+}
+
+.prose-editor pre {
+  @apply bg-gray-100 p-4 rounded-lg overflow-x-auto my-6;
+}
+
+.prose-editor pre code {
+  @apply bg-transparent p-0;
+}
+
+/* AI indicator styles */
+.ai-indicator {
+  @apply relative;
+}
+
+.ai-indicator::before {
+  content: '';
+  @apply absolute -top-2 -right-2 w-3 h-3 bg-green-500 rounded-full animate-pulse;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full;
+}
+
+/* Custom focus styles */
+.focus-primary:focus {
+  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+}
+
+/* Responsive text scaling */
+@media (max-width: 640px) {
+  .responsive-heading {
+    @apply text-2xl;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .responsive-heading {
+    @apply text-4xl;
+  }
+}
+
+@media (min-width: 1025px) {
+  .responsive-heading {
+    @apply text-6xl;
+  }
+}
+
+/* Status badge styles */
+.status-badge-active {
+  @apply px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full;
+}
+
+.status-badge-draft {
+  @apply px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full;
+}
+
+.status-badge-published {
+  @apply px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full;
+}
+
+.status-badge-archived {
+  @apply px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full;
+}
